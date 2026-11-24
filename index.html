@@ -6727,18 +6727,7 @@ function editPersonelModal(prsId) {
         }
 
         function printDirectFromPreview() {
-            const paperEl = document.getElementById('printPreviewPaper');
-            const paperHtml = paperEl ? paperEl.innerHTML.trim() : '';
-            if (!paperHtml) {
-                showToast('⚠️ Yazdırılacak belge içeriği bulunamadı.', true);
-                return;
-            }
-
-            if (isIosOrSafariMobile()) {
-                shareOrOpenPrintDoc();
-                return;
-            }
-
+            const paperHtml = document.getElementById('printPreviewPaper')?.innerHTML || '';
             document.getElementById('printContainer').innerHTML = paperHtml;
             const modal = document.getElementById('printPreviewModal');
             if (modal) modal.style.display = 'none';
@@ -6749,18 +6738,6 @@ function editPersonelModal(prsId) {
         }
 
         function downloadPrintablePdf() {
-            const paperEl = document.getElementById('printPreviewPaper');
-            const paperHtml = paperEl ? paperEl.innerHTML.trim() : '';
-            if (!paperHtml) {
-                showToast('⚠️ PDF oluşturulacak belge içeriği bulunamadı.', true);
-                return;
-            }
-
-            if (isIosOrSafariMobile()) {
-                shareOrOpenPrintDoc();
-                return;
-            }
-
             const titleText = currentPrintTitle || 'AS_YAPI_BELGE';
             const blob = generatePdfBlobFromPreview();
             const url = URL.createObjectURL(blob);
@@ -6772,61 +6749,6 @@ function editPersonelModal(prsId) {
             document.body.removeChild(a);
             setTimeout(() => URL.revokeObjectURL(url), 2000);
             showToast('📄 PDF belgesi cihazınıza indirildi.');
-        }
-
-        async function shareOrOpenPrintDoc() {
-            const paperEl = document.getElementById('printPreviewPaper');
-            const paperHtml = paperEl ? paperEl.innerHTML.trim() : '';
-            if (!paperHtml) {
-                showToast('⚠️ Paylaşılacak belge içeriği bulunamadı.', true);
-                return;
-            }
-
-            const titleText = currentPrintTitle || 'Belge';
-            const fileName = `${titleText}_${todayStr()}.pdf`;
-            const blob = generatePdfBlobFromPreview();
-
-            if (!blob) {
-                showToast('⚠️ PDF belgesi oluşturulamadı.', true);
-                return;
-            }
-
-            const file = new File([blob], fileName, { type: 'application/pdf' });
-
-            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                try {
-                    await navigator.share({
-                        title: titleText,
-                        files: [file]
-                    });
-                    return;
-                } catch (err) {
-                    if (err && err.name === 'AbortError') return;
-                }
-            }
-
-            const url = URL.createObjectURL(blob);
-            if (isIosOrSafariMobile()) {
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = fileName;
-                a.target = '_blank';
-                a.rel = 'noopener';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                setTimeout(() => URL.revokeObjectURL(url), 10000);
-                return;
-            }
-
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            setTimeout(() => URL.revokeObjectURL(url), 2000);
-            showToast('📤 Belge PDF dosyası olarak kaydedildi.');
         }
 
            
