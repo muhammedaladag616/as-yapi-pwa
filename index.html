@@ -6727,11 +6727,18 @@ function editPersonelModal(prsId) {
         }
 
         function printDirectFromPreview() {
-            if (isIosOrSafariMobile()) {
-                openFormattedHtmlPrintWindow(true);
+            const paperEl = document.getElementById('printPreviewPaper');
+            const paperHtml = paperEl ? paperEl.innerHTML.trim() : '';
+            if (!paperHtml) {
+                showToast('⚠️ Yazdırılacak belge içeriği bulunamadı.', true);
                 return;
             }
-            const paperHtml = document.getElementById('printPreviewPaper')?.innerHTML || '';
+
+            if (isIosOrSafariMobile()) {
+                shareOrOpenPrintDoc();
+                return;
+            }
+
             document.getElementById('printContainer').innerHTML = paperHtml;
             const modal = document.getElementById('printPreviewModal');
             if (modal) modal.style.display = 'none';
@@ -6742,10 +6749,18 @@ function editPersonelModal(prsId) {
         }
 
         function downloadPrintablePdf() {
-            if (isIosOrSafariMobile()) {
-                openFormattedHtmlPrintWindow(true);
+            const paperEl = document.getElementById('printPreviewPaper');
+            const paperHtml = paperEl ? paperEl.innerHTML.trim() : '';
+            if (!paperHtml) {
+                showToast('⚠️ PDF oluşturulacak belge içeriği bulunamadı.', true);
                 return;
             }
+
+            if (isIosOrSafariMobile()) {
+                shareOrOpenPrintDoc();
+                return;
+            }
+
             const titleText = currentPrintTitle || 'AS_YAPI_BELGE';
             const blob = generatePdfBlobFromPreview();
             const url = URL.createObjectURL(blob);
@@ -6760,6 +6775,13 @@ function editPersonelModal(prsId) {
         }
 
         async function shareOrOpenPrintDoc() {
+            const paperEl = document.getElementById('printPreviewPaper');
+            const paperHtml = paperEl ? paperEl.innerHTML.trim() : '';
+            if (!paperHtml) {
+                showToast('⚠️ Paylaşılacak belge içeriği bulunamadı.', true);
+                return;
+            }
+
             const titleText = currentPrintTitle || 'Belge';
             const fileName = `${titleText}_${todayStr()}.pdf`;
             const blob = generatePdfBlobFromPreview();
@@ -6785,7 +6807,14 @@ function editPersonelModal(prsId) {
 
             const url = URL.createObjectURL(blob);
             if (isIosOrSafariMobile()) {
-                window.open(url, '_blank');
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                a.target = '_blank';
+                a.rel = 'noopener';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
                 setTimeout(() => URL.revokeObjectURL(url), 10000);
                 return;
             }
