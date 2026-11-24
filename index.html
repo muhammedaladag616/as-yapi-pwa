@@ -6620,6 +6620,7 @@ function editPersonelModal(prsId) {
                         background: #ffffff;
                         z-index: 999999;
                         overflow-y: auto;
+                        -webkit-overflow-scrolling: touch;
                         padding: 16px;
                         padding-top: max(16px, env(safe-area-inset-top));
                         font-family: Arial, Helvetica, sans-serif;
@@ -6662,6 +6663,8 @@ function editPersonelModal(prsId) {
                         border-collapse: collapse;
                         margin-top: 10px;
                         font-size: 12px;
+                        background: #ffffff;
+                        color: #111827;
                     }
                     #mobilePrintOverlay th, #mobilePrintOverlay td {
                         border: 1px solid #94a3b8;
@@ -6673,13 +6676,26 @@ function editPersonelModal(prsId) {
                         font-weight: bold;
                     }
                     @media print {
+                        html, body {
+                            background: #ffffff !important;
+                            background-image: none !important;
+                            overflow: visible !important;
+                            height: auto !important;
+                        }
                         body > *:not(#mobilePrintOverlay) {
                             display: none !important;
                         }
                         #mobilePrintOverlay {
                             position: static !important;
-                            padding: 0 !important;
+                            inset: auto !important;
+                            z-index: auto !important;
                             overflow: visible !important;
+                            padding: 0 !important;
+                            background: #ffffff !important;
+                        }
+                        #mobilePrintOverlay * {
+                            box-shadow: none !important;
+                            text-shadow: none !important;
                         }
                         #mobilePrintOverlay .m-print-bar {
                             display: none !important;
