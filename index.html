@@ -1008,6 +1008,17 @@
                 flex-wrap: wrap !important;
                 justify-content: center !important;
             }
+#printPreviewPaper {
+                width: 100% !important;
+                min-width: 100% !important;
+                padding: 10px !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                box-sizing: border-box !important;
+            }
+            #printPreviewPaper table {
+                min-width: 540px !important;
+            }
         }
     </style>
     <script>
@@ -6566,15 +6577,46 @@ function editPersonelModal(prsId) {
             return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
         }
 
+        function openFormattedHtmlPrintWindow(autoPrint) {
+            const paperHtml = document.getElementById('printPreviewPaper')?.innerHTML || '';
+            const titleText = currentPrintTitle || 'AS_YAPI_BELGE';
+            const printWin = window.open('', '_blank');
+            if (!printWin) {
+                showToast('⚠️ Açılır pencere engellendi. Safari ayarlarından izin verin.', true);
+                return;
+            }
+            printWin.document.open();
+            printWin.document.write(`<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${titleText}</title>
+<style>
+    body { font-family: Arial, Helvetica, sans-serif; color: #111827; margin: 16px; background: #fff; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+    th, td { border: 1px solid #94a3b8; padding: 6px 8px; text-align: left; }
+    th { background: #e2e8f0; font-weight: bold; }
+    .no-print-bar { background: #1e3a8a; color: #fff; padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; }
+    .no-print-bar button { background: #16a34a; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: bold; font-size: 13px; }
+    @media print { .no-print-bar { display: none !important; } body { margin: 0; } }
+</style>
+</head>
+<body>
+    <div class="no-print-bar">
+        <span>📄 Tabloyu PDF yapmak için sağdaki butona veya alttaki <b>Paylaş → Yazdır</b> menüsüne basın.</span>
+        <button onclick="window.print()">🖨️ Yazdır / PDF Yap</button>
+    </div>
+    ${paperHtml}
+    ${autoPrint ? '<script>setTimeout(function(){ window.print(); }, 400);<\/script>' : ''}
+</body>
+</html>`);
+            printWin.document.close();
+        }
+
         function printDirectFromPreview() {
             if (isIosOrSafariMobile()) {
-                const blob = generatePdfBlobFromPreview();
-                const url = URL.createObjectURL(blob);
-                const win = window.open(url, '_blank');
-                if (!win) {
-                    window.location.href = url;
-                }
-                showToast('📱 Safari PDF görünümü açıldı. Alt/üstteki Paylaş simgesinden Yazdır diyebilirsiniz.');
+                openFormattedHtmlPrintWindow(true);
                 return;
             }
             const paperHtml = document.getElementById('printPreviewPaper')?.innerHTML || '';
@@ -6588,15 +6630,13 @@ function editPersonelModal(prsId) {
         }
 
         function downloadPrintablePdf() {
+            if (isIosOrSafariMobile()) {
+                openFormattedHtmlPrintWindow(true);
+                return;
+            }
             const titleText = currentPrintTitle || 'AS_YAPI_BELGE';
             const blob = generatePdfBlobFromPreview();
             const url = URL.createObjectURL(blob);
-            if (isIosOrSafariMobile()) {
-                const win = window.open(url, '_blank');
-                if (!win) window.location.href = url;
-                showToast('📱 PDF Safari üzerinde açıldı. Paylaş menüsünden Dosyalara Kaydedebilirsiniz.');
-                return;
-            }
             const a = document.createElement('a');
             a.href = url;
             a.download = `${titleText}_${todayStr()}.pdf`;
@@ -6608,6 +6648,10 @@ function editPersonelModal(prsId) {
         }
 
         function shareOrOpenPrintDoc() {
+            if (isIosOrSafariMobile()) {
+                openFormattedHtmlPrintWindow(false);
+                return;
+            }
             const titleText = currentPrintTitle || 'Belge';
             const fileName = `${titleText}_${todayStr()}.pdf`;
             const blob = generatePdfBlobFromPreview();
@@ -6620,6 +6664,17 @@ function editPersonelModal(prsId) {
                 }).catch(() => {});
                 return;
             }
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 2000);
+            showToast('📤 Belge PDF dosyası olarak kaydedildi.');
+        }
 
             const url = URL.createObjectURL(blob);
             if (isIosOrSafariMobile()) {
