@@ -1988,14 +1988,39 @@
                 }
                 const localTs = Number(db._updatedAt) || 0;
                 const remoteTs = Number(remoteData._updatedAt) || 0;
+
+                const localHasRecords =
+                    (Array.isArray(db.cariler) && db.cariler.length > 0) ||
+                    (Array.isArray(db.kasaHareketleri) && db.kasaHareketleri.length > 0) ||
+                    (Array.isArray(db.stoklar) && db.stoklar.length > 0) ||
+                    (Array.isArray(db.stokHareketleri) && db.stokHareketleri.length > 0) ||
+                    (Array.isArray(db.projeler) && db.projeler.length > 0) ||
+                    (Array.isArray(db.personeller) && db.personeller.length > 0) ||
+                    (Array.isArray(db.personelHareketleri) && db.personelHareketleri.length > 0);
+
+                const remoteHasRecords =
+                    (Array.isArray(remoteData.cariler) && remoteData.cariler.length > 0) ||
+                    (Array.isArray(remoteData.kasaHareketleri) && remoteData.kasaHareketleri.length > 0) ||
+                    (Array.isArray(remoteData.stoklar) && remoteData.stoklar.length > 0) ||
+                    (Array.isArray(remoteData.stokHareketleri) && remoteData.stokHareketleri.length > 0) ||
+                    (Array.isArray(remoteData.projeler) && remoteData.projeler.length > 0) ||
+                    (Array.isArray(remoteData.personeller) && remoteData.personeller.length > 0) ||
+                    (Array.isArray(remoteData.personelHareketleri) && remoteData.personelHareketleri.length > 0);
+
+                if (!forceOverwrite && localHasRecords && !remoteHasRecords) {
+                    isCloudPulling = false;
+                    updateCloudBadge('Bulut Güncel ✓');
+                    return false;
+                }
+
                 if (forceOverwrite || remoteTs > localTs) {
                     const def = getDefaultDB();
                     const mergedRemoteNotlar = {
-    ...def.notlar,
-    ...(remoteData.notlar || {}),
-    yapiskanNotList: Array.isArray(remoteData.notlar?.yapiskanNotList) ? remoteData.notlar.yapiskanNotList : [],
-    gelecekOdemeList: Array.isArray(remoteData.notlar?.gelecekOdemeList) ? remoteData.notlar.gelecekOdemeList : []
-};
+                        ...def.notlar,
+                        ...(remoteData.notlar || {}),
+                        yapiskanNotList: Array.isArray(remoteData.notlar?.yapiskanNotList) ? remoteData.notlar.yapiskanNotList : [],
+                        gelecekOdemeList: Array.isArray(remoteData.notlar?.gelecekOdemeList) ? remoteData.notlar.gelecekOdemeList : []
+                    };
 db = {
     ...def,
     ...remoteData,
