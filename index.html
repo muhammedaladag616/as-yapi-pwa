@@ -1328,7 +1328,7 @@
                 <div style="text-align:center; margin-bottom:10px;" id="loginLogoArea"></div>
                 <div class="form-group" style="margin-bottom:8px;">
                     <label>Kullanıcı Seçiniz</label>
-                    <select id="loginUserSelect" class="win-select"></select>
+                    <select id="loginUserSelect" class="win-select" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()"></select>
                 </div>
                 <div class="form-group" style="margin-bottom:10px;">
                     <label>Kullanıcı Şifresi</label>
@@ -2115,7 +2115,6 @@ db = {
             pwInput.value = '';
             document.getElementById('loginErrorBox').style.display = 'none';
             document.getElementById('loginModal').style.display = 'flex';
-            setTimeout(() => pwInput.focus(), 50);
         }
 
         function attemptLogin() {
@@ -6676,22 +6675,7 @@ function editPersonelModal(prsId) {
             showToast('📤 Belge PDF dosyası olarak kaydedildi.');
         }
 
-            const url = URL.createObjectURL(blob);
-            if (isIosOrSafariMobile()) {
-                const win = window.open(url, '_blank');
-                if (!win) window.location.href = url;
-                showToast('📱 PDF açıldı. Paylaş butonundan gönderebilir veya yazdırabilirsiniz.');
-                return;
-            }
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            setTimeout(() => URL.revokeObjectURL(url), 2000);
-            showToast('📤 Belge PDF dosyası olarak kaydedildi.');
-        }
+           
 
         // İrsaliye Numarası Bazlı Tek Belge Yazdırma (10 ürün veya kaç ürün girildiyse hepsi tek belgede)
         function printIrsaliyeFisi(belgeNo, tip) {
