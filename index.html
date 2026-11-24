@@ -6759,25 +6759,37 @@ function editPersonelModal(prsId) {
             showToast('📄 PDF belgesi cihazınıza indirildi.');
         }
 
-        function shareOrOpenPrintDoc() {
-            if (isIosOrSafariMobile()) {
-                openFormattedHtmlPrintWindow(false);
-                return;
-            }
+        async function shareOrOpenPrintDoc() {
             const titleText = currentPrintTitle || 'Belge';
             const fileName = `${titleText}_${todayStr()}.pdf`;
             const blob = generatePdfBlobFromPreview();
-            const file = new File([blob], fileName, { type: 'application/pdf' });
 
-            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                navigator.share({
-                    title: titleText,
-                    files: [file]
-                }).catch(() => {});
+            if (!blob) {
+                showToast('⚠️ PDF belgesi oluşturulamadı.', true);
                 return;
             }
 
+            const file = new File([blob], fileName, { type: 'application/pdf' });
+
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        title: titleText,
+                        files: [file]
+                    });
+                    return;
+                } catch (err) {
+                    if (err && err.name === 'AbortError') return;
+                }
+            }
+
             const url = URL.createObjectURL(blob);
+            if (isIosOrSafariMobile()) {
+                window.open(url, '_blank');
+                setTimeout(() => URL.revokeObjectURL(url), 10000);
+                return;
+            }
+
             const a = document.createElement('a');
             a.href = url;
             a.download = fileName;
